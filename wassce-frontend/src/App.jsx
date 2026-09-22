@@ -23,7 +23,7 @@ import logoUrl from "./assets/logo.png";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const SUBSCRIPTION_DAYS = 30;
-const DEFAULT_API_BASE = "http://localhost:3001";
+const DEFAULT_API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
 const SUBJECTS = [
   {
