@@ -21,8 +21,19 @@
 // of values now, not SQLite's `?` or `@name` binding.
 const { Pool } = require("pg");
 
+// Supabase (and most hosted Postgres) requires SSL for connections
+// from outside their own network — a connection from Render to
+// Supabase needs it, but a connection to a local Postgres on this
+// machine doesn't and would even reject an SSL handshake attempt.
+// This never surfaced during local development/testing since that
+// was always against localhost. Detected automatically from the
+// connection string's host rather than needing a separate env var:
+// anything that isn't localhost/127.0.0.1 gets SSL enabled.
+const isLocalDatabase = /localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL || "");
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: isLocalDatabase ? false : { rejectUnauthorized: false },
 });
 
 pool.on("error", (err) => {
