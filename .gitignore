@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Environment files — never commit real secrets
+.env
+.env.local
+*.env.local
+
+# Local SQLite leftovers (pre-Postgres migration)
+data.sqlite
+data.sqlite-*
+
+# Build output
+dist/
+build/
+
+# OS/editor cruft
+.DS_Store
+*.log

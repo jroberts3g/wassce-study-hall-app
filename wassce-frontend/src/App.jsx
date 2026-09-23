@@ -540,14 +540,22 @@ function stripJsonFence(text) {
 /* ---------------- Backend API client ---------------- */
 
 async function apiFetch(api, path, options = {}) {
-  const res = await fetch(api.base.replace(/\/$/, "") + path, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(api.token ? { Authorization: "Bearer " + api.token } : {}),
-      ...(options.headers || {}),
-    },
-  });
+  let res;
+  try {
+    res = await fetch(api.base.replace(/\/$/, "") + path, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(api.token ? { Authorization: "Bearer " + api.token } : {}),
+        ...(options.headers || {}),
+      },
+    });
+  } catch {
+    // A genuine network-level failure (offline, DNS, CORS, server
+    // unreachable) — this is the ONLY case that gets a connectivity
+    // hint, since it's the only case where one is actually true.
+    throw new Error("Could not reach the server. Please check your internet connection and try again.");
+  }
   let body = null;
   try {
     body = await res.json();
@@ -555,6 +563,9 @@ async function apiFetch(api, path, options = {}) {
     // no body
   }
   if (!res.ok) {
+    // A real response came back with a real error (e.g. "email
+    // already exists") — shown exactly as the backend phrased it,
+    // with no added guesswork about server connectivity.
     throw new Error((body && body.error) || "Request failed (" + res.status + ")");
   }
   return body;
@@ -654,6 +665,7 @@ export default function App() {
   const [subscriptions, setSubscriptions] = useState({});
   const [checkout, setCheckout] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
   const [priceGmd, setPriceGmd] = useState(10); // placeholder until /settings responds
   const [currency, setCurrency] = useState("GMD"); // placeholder until /settings responds
 
@@ -717,6 +729,12 @@ export default function App() {
     localStorage.removeItem("auth_token");
     setApi(null);
     setAuthUser(null);
+    // Per design: logging out from inside the Study Hall takes the
+    // person all the way back to the actual Next-Gen Academy landing
+    // page, not just to this app's own login screen — matching how a
+    // "sign out of everything" action should feel from the student's
+    // perspective.
+    window.location.href = "https://techhaven360.com";
   };
 
   const activeCount = Object.values(subscriptions).filter(
@@ -749,6 +767,7 @@ export default function App() {
                 <button className={"tab" + (tab === "store" ? " tab-active" : "")} onClick={() => { setTab("store"); setStudyMode(null); }}>Book Store</button>
               </nav>
             )}
+            {api && <button className="btn-logout" onClick={logout}>Log out</button>}
           </div>
         </div>
       </header>
@@ -757,7 +776,7 @@ export default function App() {
         {!ready ? (
           <div className="loading-block">Opening your desk…</div>
         ) : !api ? (
-          <AuthScreen apiBase={backendUrl} onAuthenticated={onAuthenticated} onChangeBackend={() => setSettingsOpen(true)} />
+          <AuthScreen apiBase={backendUrl} onAuthenticated={onAuthenticated} />
         ) : tab === "subscribe" ? (
           <SubscribeTab subscriptions={subscriptions} priceGmd={priceGmd} currency={currency} onPay={(subjectId) => { refreshPrice(); setCheckout({ subjectId }); }} />
         ) : tab === "store" ? (
@@ -768,14 +787,22 @@ export default function App() {
       </main>
 
       <SettingsPanel
-        api={api}
         open={settingsOpen}
         setOpen={setSettingsOpen}
-        backendUrl={backendUrl}
         connected={!!api}
         authUser={authUser}
-        onChangeBackend={changeBackend}
         onLogout={logout}
+      />
+
+      <footer className="app-footer">
+        <button className="admin-footer-link" onClick={() => setAdminOpen((v) => !v)}>Admin</button>
+      </footer>
+      <AdminPanel
+        api={api}
+        open={adminOpen}
+        setOpen={setAdminOpen}
+        backendUrl={backendUrl}
+        onChangeBackend={changeBackend}
         priceGmd={priceGmd}
         currency={currency}
         onPriceChanged={setPriceGmd}
@@ -797,7 +824,7 @@ export default function App() {
 
 /* ================== Auth screen ================== */
 
-function AuthScreen({ apiBase, onAuthenticated, onChangeBackend }) {
+function AuthScreen({ apiBase, onAuthenticated }) {
   const [mode, setMode] = useState("signup");
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState(null);
@@ -815,7 +842,7 @@ function AuthScreen({ apiBase, onAuthenticated, onChangeBackend }) {
       const data = await apiFetch({ base: apiBase }, path, { method: "POST", body: JSON.stringify(payload) });
       onAuthenticated(data.token, data.user);
     } catch (e2) {
-      setError(e2.message + " — is the backend running at " + apiBase + "?");
+      setError(e2.message);
     } finally {
       setLoading(false);
     }
@@ -827,10 +854,6 @@ function AuthScreen({ apiBase, onAuthenticated, onChangeBackend }) {
         <button className={"auth-tab" + (mode === "signup" ? " auth-tab-active" : "")} onClick={() => setMode("signup")}>Create account</button>
         <button className={"auth-tab" + (mode === "login" ? " auth-tab-active" : "")} onClick={() => setMode("login")}>Log in</button>
       </div>
-
-      <p className="page-sub">
-        Backend: <code>{apiBase}</code>. <button className="btn-link" onClick={onChangeBackend}>Change</button>
-      </p>
 
       <form className="auth-form" onSubmit={submit}>
         {mode === "signup" && (
@@ -991,7 +1014,6 @@ function CheckoutModal({ api, subject, priceGmd, currency, onClose, onSuccess })
               <div className="modal-amount-value">{currency} {priceGmd.toFixed(2)}</div>
             </div>
             <button className="btn-primary btn-block" onClick={pay}>Pay {currency} {priceGmd.toFixed(2)}</button>
-            <div className="modal-fineprint">This creates a real Modem Pay Payment Intent via your backend.</div>
           </>
         )}
 
@@ -1819,28 +1841,48 @@ function FurtherReadingBlock({ api, subject }) {
   );
 }
 
-function SettingsPanel({ api, open, setOpen, backendUrl, connected, authUser, onChangeBackend, onLogout, priceGmd, currency, onPriceChanged }) {
-  const [urlInput, setUrlInput] = useState(backendUrl);
-  useEffect(() => { setUrlInput(backendUrl); }, [backendUrl]);
-
+function SettingsPanel({ open, setOpen, connected, authUser, onLogout }) {
   return (
     <div className="proto-tools">
       <button className="proto-toggle" onClick={() => setOpen((v) => !v)}>{open ? "Hide settings" : "Settings"}</button>
       {open && (
         <div className="proto-panel">
-          <div className="proto-panel-label">Backend connection</div>
           {connected && <div className="backend-badge">Logged in as {authUser?.name} ({authUser?.email})</div>}
-          <div className="backend-form">
-            <input className="chat-input" placeholder="http://localhost:3001" value={urlInput} onChange={(e) => setUrlInput(e.target.value)} />
-            <button className="btn-link" onClick={() => onChangeBackend(urlInput.trim())} disabled={!urlInput.trim()}>Save & log out</button>
-          </div>
           {connected && <button className="btn-link" onClick={onLogout}>Log out</button>}
-
-          <PricingAdminSection backendUrl={backendUrl} priceGmd={priceGmd} currency={currency} onPriceChanged={onPriceChanged} />
-          <BooksAdminSection api={api} backendUrl={backendUrl} />
-          <FurtherReadingAdminSection api={api} backendUrl={backendUrl} />
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Deliberately separate from SettingsPanel and NOT part of the
+ * normal navigation any logged-in student sees — only a small,
+ * unobtrusive link in the footer reveals this exists at all. Actual
+ * mutation is still (and was always) enforced server-side via
+ * ADMIN_SECRET regardless of whether this UI is visible; hiding it
+ * here is about not exposing admin tooling's existence to every
+ * regular user, not a substitute for that server-side check.
+ */
+function AdminPanel({ api, open, setOpen, backendUrl, onChangeBackend, priceGmd, currency, onPriceChanged }) {
+  const [urlInput, setUrlInput] = useState(backendUrl);
+  useEffect(() => { setUrlInput(backendUrl); }, [backendUrl]);
+
+  if (!open) return null;
+
+  return (
+    <div className="proto-panel admin-panel">
+      <div className="proto-panel-label">Admin tools</div>
+      <div className="proto-panel-label" style={{ marginTop: 4, fontWeight: 400 }}>Backend connection (developer use)</div>
+      <div className="backend-form">
+        <input className="chat-input" placeholder="http://localhost:3001" value={urlInput} onChange={(e) => setUrlInput(e.target.value)} />
+        <button className="btn-link" onClick={() => onChangeBackend(urlInput.trim())} disabled={!urlInput.trim()}>Save & log out</button>
+      </div>
+
+      <PricingAdminSection backendUrl={backendUrl} priceGmd={priceGmd} currency={currency} onPriceChanged={onPriceChanged} />
+      <BooksAdminSection api={api} backendUrl={backendUrl} />
+      <FurtherReadingAdminSection api={api} backendUrl={backendUrl} />
+      <button className="btn-secondary" style={{ marginTop: 12 }} onClick={() => setOpen(false)}>Close admin tools</button>
     </div>
   );
 }
@@ -2326,7 +2368,13 @@ body { margin: 0; }
 .order-title { font-weight: 600; }
 .order-meta { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
 .order-status-area { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.book-cover { width: 100%; max-height: 160px; object-fit: cover; border-radius: 4px; border: 1px solid var(--line); margin: 4px 0; display: block; }
+.btn-logout { background: none; border: 1px solid var(--line); color: var(--ink-soft); padding: 8px 14px; border-radius: 4px; font-size: 13.5px; cursor: pointer; }
+.btn-logout:hover { border-color: var(--rust); color: var(--rust); }
+.app-footer { width: 100%; box-sizing: border-box; padding: 24px; display: flex; justify-content: center; }
+.admin-footer-link { background: none; border: none; color: var(--line); font-size: 11px; cursor: pointer; padding: 4px 8px; }
+.admin-footer-link:hover { color: var(--ink-soft); }
+.admin-panel { max-width: 640px; margin: 0 auto 24px; }
+.book-cover { width: 100%; aspect-ratio: 2 / 3; object-fit: contain; background: #FBF7EE; border-radius: 4px; border: 1px solid var(--line); margin: 4px 0; display: block; }
 .admin-edit-form { padding: 4px; }
 .admin-edit-form-active { border: 2px solid var(--gold); border-radius: 6px; padding: 10px; background: rgba(184, 121, 10, 0.06); }
 .auth-wrap { max-width: 420px; margin: 40px auto 0; }
