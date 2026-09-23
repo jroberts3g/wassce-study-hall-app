@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Next-Gen Academy — Home</title>
+<meta name="description" content="Next-Gen Academy — comprehensive WASSCE study support for Secondary and High School students across West Africa.">
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,700&family=Source+Sans+3:wght@400;500;600&display=swap">
+<style>
+  body { margin: 0; font-family: 'Source Sans 3', system-ui, sans-serif; background: #FBF7EE; color: #2B2A25; }
+  a { color: #8A5A00; text-decoration: none; }
+  a:hover { color: #B8790A; }
+  h1, h2, h3, h4 { font-family: 'Playfair Display', Georgia, serif; margin: 0; }
+  select { font-family: 'Source Sans 3', system-ui, sans-serif; }
+  button { font-family: 'Source Sans 3', system-ui, sans-serif; cursor: pointer; }
+  .country-panel { display: none; }
+  .country-panel.active { display: block; }
+</style>
+</head>
+<body>
+
+<div style="width: 100%; min-height: 100vh; display: flex; flex-direction: column; background: #FBF7EE; background-image: radial-gradient(#E7DCC4 1px, transparent 1px); background-size: 22px 22px;">
+
+  <!-- NAV -->
+  <div style="width: 100%; box-sizing: border-box; background: #1B2340; padding: 18px 40px; display: flex; align-items: center; justify-content: space-between; gap: 24px; position: sticky; top: 0; z-index: 10;">
+    <div style="display: flex; align-items: center; gap: 10px;"><img src="logo.png" alt="Next-Gen Academy" style="height: 44px; width: 44px; object-fit: contain; border-radius: 50%; background: #fff;"><span style="font-size: 22px; font-weight: 700; color: #F7EFDC; letter-spacing: 0.3px;">Next-Gen Academy</span></div>
+    <div style="display: flex; align-items: center; gap: 28px; flex-wrap: wrap;">
+      <a href="#about" style="color: #F0E6C8; font-size: 15px; font-weight: 600;">About Us</a>
+      <a href="#contact" style="color: #F0E6C8; font-size: 15px; font-weight: 600;">Contact</a>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <label for="country-select" style="color: #C7BE9E; font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px;">Choose your curriculum</label>
+        <select id="country-select" onchange="showCountry(this.value)" style="padding: 7px 10px; border-radius: 6px; border: 1px solid #3C4568; background: #262F52; color: #FBF7EE; font-size: 14px; min-width: 220px;">
+          <option value="gm">The Gambia — available now</option>
+          <option value="gh">Ghana — coming soon</option>
+          <option value="ng">Nigeria — coming soon</option>
+          <option value="sl">Sierra Leone — coming soon</option>
+          <option value="lr">Liberia — coming soon</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div style="width: 100%; box-sizing: border-box; padding: 72px 40px 56px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 18px;">
+    <img src="hero.png" alt="Students ascending and descending the wide steps of the Next-Gen Academy building" style="width: 100%; max-width: 980px; aspect-ratio: 1448 / 1086; object-fit: cover; border-radius: 14px; box-shadow: 0 12px 32px rgba(27, 35, 64, 0.18);">
+    <div style="font-family: 'Playfair Display', Georgia, serif; font-style: italic; font-weight: 700; font-size: clamp(24px, 3.4vw, 38px); color: #8A5A00; line-height: 1.2; margin-top: 4px;">Knowledge Feeds Your Future</div>
+    <h1 style="font-size: clamp(30px, 4vw, 44px); color: #1B2340; margin-top: 6px;">Welcome to Next-Gen Academy</h1>
+    <div style="display: inline-flex; align-items: center; gap: 8px; background: #EFE4C6; border: 1px solid #D9C68F; border-radius: 999px; padding: 8px 18px; font-size: 14px; font-weight: 600; color: #6B5518; margin-top: 2px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B5518" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="18" x2="12" y2="21"></line></svg>
+      Currently a virtual learning facility — study anytime, from anywhere
+    </div>
+    <p style="max-width: 640px; font-size: 17px; line-height: 1.6; color: #4A4738;">
+      Comprehensive WASSCE study support for Secondary and High School students across West Africa —
+      built to strengthen what you're learning in class, one subject at a time.
+    </p>
+  </div>
+
+  <!-- PRIZES & BOOK STORE -->
+  <div style="width: 100%; box-sizing: border-box; padding: 0 40px 56px; display: flex; gap: 28px; flex-wrap: wrap; justify-content: center;">
+
+    <div style="flex: 1 1 380px; max-width: 480px; background: #FFFFFF; border: 1px solid #E7DCC4; border-radius: 14px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px;">
+      <h3 style="font-size: 22px; color: #1B2340;">Prizes &amp; Awards</h3>
+      <p style="font-size: 15px; line-height: 1.6; color: #4A4738; margin: 0;">
+        Every self-assessment score is tracked throughout the year. At the end of each academic year,
+        the three top-performing students are awarded prizes and celebrated right here on the home page.
+      </p>
+      <div style="background: #FBF7EE; border: 1px solid #E7DCC4; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; color: #8A5A00; font-weight: 600;">This year's champions</div>
+        <div style="font-size: 14px; color: #7A6F52;">[Announced at the end of the academic year]</div>
+      </div>
+    </div>
+
+    <div style="flex: 1 1 380px; max-width: 480px; background: #FFFFFF; border: 1px solid #E7DCC4; border-radius: 14px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px;">
+      <h3 style="font-size: 22px; color: #1B2340;">Book Store</h3>
+      <p style="font-size: 15px; line-height: 1.6; color: #4A4738; margin: 0;">
+        Recommended textbooks and study guides, priced in your local currency.
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #FBF7EE; border: 1px solid #E7DCC4; border-radius: 8px;">
+          <span style="font-size: 14px; color: #2B2A25;">[Book title], [Author]</span>
+          <span style="font-size: 14px; font-weight: 600; color: #8A5A00;">[Price]</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #FBF7EE; border: 1px solid #E7DCC4; border-radius: 8px;">
+          <span style="font-size: 14px; color: #2B2A25;">[Book title], [Author]</span>
+          <span style="font-size: 14px; font-weight: 600; color: #8A5A00;">[Price]</span>
+        </div>
+        <div style="font-size: 13px; color: #9A9078;">Full catalog coming soon</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CURRICULUM OVERVIEW (driven by the nav dropdown) -->
+  <div style="width: 100%; box-sizing: border-box; padding: 0 40px 64px; display: flex; justify-content: center;">
+    <div style="width: 100%; max-width: 880px; background: #FFFFFF; border: 1px solid #E7DCC4; border-radius: 14px; padding: 36px; box-sizing: border-box;">
+
+      <div id="panel-gm" class="country-panel active">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px;">
+          <h2 style="font-size: 26px; color: #1B2340;">WAEC Curriculum — The Gambia</h2>
+          <a href="https://wassce-study-hall-app.onrender.com" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 12px 22px; background: #8A5A00; color: #FBF7EE; border-radius: 8px; font-weight: 600; font-size: 15px;">Start Learning — The Gambia</a>
+        </div>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">The West African Examinations Council (WAEC) curriculum in The Gambia provides a structured educational framework for secondary school students preparing for the West Africa Senior School Certificate Examination (WASSCE). This curriculum encompasses a broad range of subjects designed to meet the educational needs of students across various disciplines.</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Core Subjects</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">English Language (reading, writing, comprehension, grammar and oral skills), Mathematics (arithmetic, algebra, geometry, statistics and problem-solving), Integrated Science (biology, chemistry and physics), and Social Studies (citizenship, governance, history, geography and cultural studies relevant to The Gambia and the wider world).</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Elective Subjects</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;"><strong>Science stream:</strong> Biology, Chemistry, Physics, Agricultural Science, Environmental Science. <strong>Arts &amp; Humanities stream:</strong> Literature in English, History, Geography, Government, Religious Studies. <strong>Business stream:</strong> Accounting, Business Studies, Economics, Office Management. <strong>Technical &amp; Vocational options:</strong> Electrical Installation, Building Construction, Fashion Design, and related trades.</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Assessment</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">Continuous internal assessment throughout the year contributes to overall performance, alongside the final WASSCE examination administered by WAEC — results that are critical for entry into tertiary institutions.</p>
+      </div>
+
+      <div id="panel-gh" class="country-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px;">
+          <h2 style="font-size: 26px; color: #1B2340;">WAEC Curriculum — Ghana</h2>
+          <span style="display: inline-block; padding: 12px 22px; background: #EFE4C6; color: #7A6F52; border-radius: 8px; font-weight: 600; font-size: 15px;">Full app coming soon</span>
+        </div>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">The WAEC curriculum in Ghana guides secondary education, preparing students for the WASSCE, and includes a wide range of subjects allowing specialization according to interests and future career paths.</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Core Subjects</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">English Language, Mathematics, Integrated Science (biology, chemistry, physics and environmental science), and Social Studies.</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Elective Programs</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;"><strong>General Arts:</strong> Geography, History, Literature in English, Religious Studies, Government, French or a Ghanaian Language, Visual Arts. <strong>General Science:</strong> Physics, Chemistry, Biology, Elective Mathematics, Environmental Science. <strong>Business:</strong> Accounting, Business Management, Economics, Office Management, Typing. <strong>Technical &amp; Vocational:</strong> Electrical Installation, Mechanical Engineering, Building Construction, Fashion Design, Hospitality studies.</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Assessment</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">Continuous school-based assessment throughout the year, plus the final WASSCE examination administered by WAEC.</p>
+      </div>
+
+      <div id="panel-ng" class="country-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px;">
+          <h2 style="font-size: 26px; color: #1B2340;">WAEC Curriculum — Nigeria</h2>
+          <span style="display: inline-block; padding: 12px 22px; background: #EFE4C6; color: #7A6F52; border-radius: 8px; font-weight: 600; font-size: 15px;">Full app coming soon</span>
+        </div>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">The WAEC curriculum in Nigeria provides a comprehensive framework for secondary education, guiding students toward the WASSCE and allowing specialization based on interests and future aspirations.</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Core Subjects</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">English Language, Mathematics, General Science (biology, chemistry and physics), and Social Studies (citizenship, governance, history, Nigerian politics, geography and culture).</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Elective Streams</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;"><strong>Arts:</strong> Literature in English, History, Geography, Government, Music, Visual Arts, Religious Studies. <strong>Sciences:</strong> Biology, Physics, Chemistry, Elective Mathematics, Agricultural Science, Geography. <strong>Business Studies:</strong> Accounting, Business Studies, Economics, Office Practice, Commerce. <strong>Technical &amp; Vocational:</strong> Electrical Installation and Maintenance, Mechanical Engineering, Building Construction, Woodwork, Fashion and Clothing.</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Assessment</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">Continuous internal assessment throughout the year, plus the final WASSCE administered by WAEC — critical for admission into tertiary institutions.</p>
+      </div>
+
+      <div id="panel-sl" class="country-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px;">
+          <h2 style="font-size: 26px; color: #1B2340;">WAEC Curriculum — Sierra Leone</h2>
+          <span style="display: inline-block; padding: 12px 22px; background: #EFE4C6; color: #7A6F52; border-radius: 8px; font-weight: 600; font-size: 15px;">Full app coming soon</span>
+        </div>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">The WAEC curriculum in Sierra Leone provides a comprehensive education framework for secondary school students preparing for the WASSCE, spanning a broad range of subjects and disciplines.</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Core Subjects</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">English Language, Mathematics, Integrated Science (biology, chemistry and physics), and Social Studies (citizenship, governance, history, geography and cultural studies relevant to Sierra Leone and the world).</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Elective Streams</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;"><strong>Sciences:</strong> Biology, Chemistry, Physics, Agricultural Science, Environmental Science. <strong>Arts:</strong> Literature in English, Geography, History, Government, Music, Visual Arts, Religious Studies. <strong>Business Studies:</strong> Accounting, Business Studies, Economics, Commerce, Office Practice. <strong>Technical &amp; Vocational:</strong> Building and Construction, Mechanical Engineering, Electrical and Electronic Engineering, Home Economics.</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Assessment</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">Continuous internal assessment throughout the year, plus the final WASSCE administered by WAEC.</p>
+      </div>
+
+      <div id="panel-lr" class="country-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px;">
+          <h2 style="font-size: 26px; color: #1B2340;">WAEC Curriculum — Liberia</h2>
+          <span style="display: inline-block; padding: 12px 22px; background: #EFE4C6; color: #7A6F52; border-radius: 8px; font-weight: 600; font-size: 15px;">Full app coming soon</span>
+        </div>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">The WAEC curriculum in Liberia serves as an educational framework for secondary school students preparing for the WASSCE, offering a wide range of subjects tailored to various fields of study.</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Core Subjects</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">English Language, Mathematics, Integrated Science (biology, chemistry and physics), and Social Studies (citizenship, governance, history, geography and the social dynamics of Liberia and the world).</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Elective Streams</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;"><strong>Science &amp; Technology:</strong> Biology, Physics, Chemistry, Agricultural Science, Computer Studies. <strong>Arts &amp; Humanities:</strong> Literature in English, History, Geography, Government, Religious Studies, Music and Arts. <strong>Business:</strong> Accounting, Business Studies, Economics, Office Management. <strong>Technical &amp; Vocational:</strong> Electrical Installation, Mechanical Engineering, Building Construction, Fashion Design, Hospitality and Catering.</p>
+        <h4 style="font-size: 17px; color: #1B2340; margin-top: 18px;">Assessment</h4>
+        <p style="font-size: 15px; line-height: 1.7; color: #3A3828;">Continuous internal assessment throughout the year, plus the final WASSCE administered by WAEC — vital for admission to tertiary institutions.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ABOUT US -->
+  <div id="about" style="width: 100%; box-sizing: border-box; padding: 8px 40px 64px; display: flex; justify-content: center;">
+    <div style="width: 100%; max-width: 780px; display: flex; flex-direction: column; gap: 16px;">
+      <h2 style="font-size: 28px; color: #1B2340;">About Us</h2>
+      <p style="font-size: 16px; line-height: 1.75; color: #3A3828;">Next-Gen Academy has carefully put together a comprehensive set of tutorials designed to help Secondary and High School students better understand and master the subjects they are learning at school, leading to a successful completion of their secondary education with good results in the West African Senior School Certificate Examination (WASSCE) — thereby opening the way for entry into university or college, or taking on employment with knowledge and confidence in developing a career.</p>
+      <p style="font-size: 16px; line-height: 1.75; color: #3A3828;">The tutorials are therefore supplementary (extra) learning resources and must not be used as replacements for classroom attendance in your various schools.</p>
+    </div>
+  </div>
+
+  <!-- CONTACT / FOOTER -->
+  <div id="contact" style="width: 100%; box-sizing: border-box; margin-top: auto; background: #1B2340; padding: 40px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;">
+    <div style="display: flex; align-items: center; gap: 8px;"><img src="logo.png" alt="Next-Gen Academy" style="height: 28px; width: 28px; object-fit: contain; border-radius: 50%; background: #fff;"><span style="font-family: 'Playfair Display', Georgia, serif; font-size: 20px; color: #F7EFDC;">Next-Gen Academy</span></div>
+    <div style="font-size: 14px; color: #C7BE9E;">techhaven360.com &nbsp;·&nbsp; <a href="mailto:Support@techhaven360.com" style="color: #C7BE9E; text-decoration: underline;">Support@techhaven360.com</a> &nbsp;·&nbsp; <a href="tel:+16576949006" style="color: #C7BE9E; text-decoration: underline;">+1 657 694 9006</a></div>
+    <div style="font-size: 13px; color: #8A8770; margin-top: 8px;">&copy; 2026 Next-Gen Academy. All rights reserved.</div>
+  </div>
+
+</div>
+
+<script>
+  function showCountry(code) {
+    document.querySelectorAll('.country-panel').forEach(function (el) {
+      el.classList.remove('active');
+    });
+    var panel = document.getElementById('panel-' + code);
+    if (panel) panel.classList.add('active');
+  }
+</script>
+
+</body>
+</html>
