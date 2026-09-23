@@ -76,16 +76,8 @@
       <p style="font-size: 15px; line-height: 1.6; color: #4A4738; margin: 0;">
         Recommended textbooks and study guides, priced in your local currency.
       </p>
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #FBF7EE; border: 1px solid #E7DCC4; border-radius: 8px;">
-          <span style="font-size: 14px; color: #2B2A25;">[Book title], [Author]</span>
-          <span style="font-size: 14px; font-weight: 600; color: #8A5A00;">[Price]</span>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #FBF7EE; border: 1px solid #E7DCC4; border-radius: 8px;">
-          <span style="font-size: 14px; color: #2B2A25;">[Book title], [Author]</span>
-          <span style="font-size: 14px; font-weight: 600; color: #8A5A00;">[Price]</span>
-        </div>
-        <div style="font-size: 13px; color: #9A9078;">Full catalog coming soon</div>
+      <div id="book-list" style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-size: 13px; color: #9A9078;">Loading books…</div>
       </div>
     </div>
 
@@ -194,6 +186,47 @@
     var panel = document.getElementById('panel-' + code);
     if (panel) panel.classList.add('active');
   }
+
+  // Pulls the live book catalog from the same backend the actual app
+  // uses, rather than showing static placeholder text here — this
+  // list is exactly what an admin has added via the app's own Book
+  // Store admin panel (the small "Admin" footer link inside the
+  // app), so managing it there is what keeps this section current.
+  (function loadBooks() {
+    var container = document.getElementById('book-list');
+    fetch('https://wassce-server.onrender.com/books/public?country=gm&limit=4')
+      .then(function (res) {
+        if (!res.ok) throw new Error('Request failed');
+        return res.json();
+      })
+      .then(function (data) {
+        container.innerHTML = '';
+        if (!data.books || data.books.length === 0) {
+          container.innerHTML = '<div style="font-size: 13px; color: #9A9078;">Full catalog coming soon</div>';
+          return;
+        }
+        data.books.forEach(function (book) {
+          var row = document.createElement('div');
+          row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #FBF7EE; border: 1px solid #E7DCC4; border-radius: 8px;';
+          var titleSpan = document.createElement('span');
+          titleSpan.style.cssText = 'font-size: 14px; color: #2B2A25;';
+          titleSpan.textContent = book.title + (book.author ? ', ' + book.author : '');
+          var priceSpan = document.createElement('span');
+          priceSpan.style.cssText = 'font-size: 14px; font-weight: 600; color: #8A5A00; white-space: nowrap; margin-left: 12px;';
+          priceSpan.textContent = book.price + ' ' + book.currency;
+          row.appendChild(titleSpan);
+          row.appendChild(priceSpan);
+          container.appendChild(row);
+        });
+      })
+      .catch(function () {
+        // Backend unreachable or briefly waking from idle — fail
+        // quietly into the same "coming soon" copy rather than
+        // showing a broken/error state to a visitor on the
+        // marketing page.
+        container.innerHTML = '<div style="font-size: 13px; color: #9A9078;">Full catalog coming soon</div>';
+      });
+  })();
 </script>
 
 </body>

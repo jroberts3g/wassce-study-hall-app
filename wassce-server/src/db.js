@@ -261,6 +261,21 @@ async function migrate() {
     CREATE INDEX IF NOT EXISTS idx_yearly_rankings_country_year ON yearly_rankings(country_id, year);
     CREATE INDEX IF NOT EXISTS idx_further_reading_subject ON further_reading(subject_id);
     CREATE INDEX IF NOT EXISTS idx_book_orders_payment ON book_orders(payment_id);
+
+    -- Reset tokens are single-use, short-lived, and keyed as their
+    -- own primary key (the token itself) rather than joined off
+    -- users — a user can have zero or several outstanding tokens
+    -- (e.g. clicking "forgot password" twice), and old ones just
+    -- expire/get invalidated rather than needing to be tracked
+    -- per-user in a single column.
+    CREATE TABLE IF NOT EXISTS password_resets (
+      token TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      expires_at BIGINT NOT NULL,
+      used_at BIGINT,
+      created_at BIGINT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
   `);
 
   for (const c of COUNTRY_SEED) {

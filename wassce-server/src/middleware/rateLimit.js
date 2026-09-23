@@ -33,4 +33,20 @@ const loginLimiter = rateLimit({
   message: { error: "Too many login attempts from this network. Please wait a few minutes and try again." },
 });
 
-module.exports = { signupLimiter, loginLimiter };
+/**
+ * Forgot-password: tight limit similar to signup. This endpoint
+ * always returns the same generic response regardless of whether the
+ * email exists (to avoid leaking which addresses are registered),
+ * but without a rate limit it could still be used to spam a real
+ * user's inbox with reset emails, or as a slow email-enumeration
+ * timing probe.
+ */
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many password reset requests from this network. Please try again later." },
+});
+
+module.exports = { signupLimiter, loginLimiter, forgotPasswordLimiter };

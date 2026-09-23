@@ -37,6 +37,39 @@ router.get("/", requireAuth, async (req, res) => {
   });
 });
 
+// ---------- Public teaser (no login required) ----------
+// Used by the marketing landing page (a separate, static site with no
+// auth of its own) to show a live preview of the catalog instead of
+// static placeholder text. Deliberately unauthenticated and
+// read-only — no order/pricing-admin data, just what any visitor
+// could see by opening the app itself. Defaults to Gambia since
+// that's the only country with a live storefront today.
+router.get("/public", async (req, res) => {
+  const countryId = req.query.country || "gm";
+  const limit = Math.min(Number(req.query.limit) || 6, 20);
+
+  const rows = await db.all(
+    `SELECT b.id, b.title, b.author, b.cover_image_url, p.price, p.currency
+     FROM books b
+     JOIN book_prices p ON p.book_id = b.id AND p.country_id = $1
+     WHERE b.active = true
+     ORDER BY b.created_at DESC
+     LIMIT $2`,
+    [countryId, limit]
+  );
+
+  res.json({
+    books: rows.map((r) => ({
+      id: r.id,
+      title: r.title,
+      author: r.author,
+      coverImageUrl: r.cover_image_url,
+      price: Number(r.price),
+      currency: r.currency,
+    })),
+  });
+});
+
 // ---------- My orders (registered before /:bookId to avoid Express
 // matching "orders" as a bookId — literal paths must come first) ----------
 router.get("/orders", requireAuth, async (req, res) => {

@@ -662,6 +662,7 @@ export default function App() {
   const [api, setApi] = useState(null); // { base, token } once authenticated
   const [authUser, setAuthUser] = useState(null);
   const [ready, setReady] = useState(false);
+  const [resetToken] = useState(() => new URLSearchParams(window.location.search).get("reset"));
   const [subscriptions, setSubscriptions] = useState({});
   const [checkout, setCheckout] = useState(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -775,6 +776,8 @@ export default function App() {
       <main className="page">
         {!ready ? (
           <div className="loading-block">Opening your desk…</div>
+        ) : !api && resetToken ? (
+          <ResetPasswordScreen apiBase={backendUrl} token={resetToken} />
         ) : !api ? (
           <AuthScreen apiBase={backendUrl} onAuthenticated={onAuthenticated} />
         ) : tab === "subscribe" ? (
@@ -825,16 +828,25 @@ export default function App() {
 /* ================== Auth screen ================== */
 
 function AuthScreen({ apiBase, onAuthenticated }) {
-  const [mode, setMode] = useState("signup");
+  const [mode, setMode] = useState("signup"); // signup | login | forgot
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
+      if (mode === "forgot") {
+        await apiFetch({ base: apiBase }, "/auth/forgot-password", {
+          method: "POST",
+          body: JSON.stringify({ email: form.email }),
+        });
+        setForgotSent(true);
+        return;
+      }
       const path = mode === "login" ? "/auth/login" : "/auth/signup";
       const payload = mode === "login"
         ? { email: form.email, password: form.password }
@@ -848,31 +860,122 @@ function AuthScreen({ apiBase, onAuthenticated }) {
     }
   };
 
+  const switchMode = (m) => {
+    setMode(m);
+    setError(null);
+    setForgotSent(false);
+  };
+
   return (
     <div className="paper auth-wrap">
-      <div className="auth-tabs">
-        <button className={"auth-tab" + (mode === "signup" ? " auth-tab-active" : "")} onClick={() => setMode("signup")}>Create account</button>
-        <button className={"auth-tab" + (mode === "login" ? " auth-tab-active" : "")} onClick={() => setMode("login")}>Log in</button>
-      </div>
+      {mode !== "forgot" && (
+        <div className="auth-tabs">
+          <button className={"auth-tab" + (mode === "signup" ? " auth-tab-active" : "")} onClick={() => switchMode("signup")}>Create account</button>
+          <button className={"auth-tab" + (mode === "login" ? " auth-tab-active" : "")} onClick={() => switchMode("login")}>Log in</button>
+        </div>
+      )}
 
-      <form className="auth-form" onSubmit={submit}>
-        {mode === "signup" && (
+      {mode === "forgot" && forgotSent ? (
+        <div className="auth-form">
+          <p className="page-sub">
+            If an account exists for <strong>{form.email}</strong>, a password reset link has been sent —
+            check your inbox (and spam folder) for an email from Next-Gen Academy.
+          </p>
+          <button className="btn-secondary btn-block" onClick={() => switchMode("login")}>Back to log in</button>
+        </div>
+      ) : (
+        <form className="auth-form" onSubmit={submit}>
+          {mode === "signup" && (
+            <label className="field">
+              <span>Full name</span>
+              <input required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Fatou Jallow" />
+            </label>
+          )}
           <label className="field">
-            <span>Full name</span>
-            <input required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Fatou Jallow" />
+            <span>Email</span>
+            <input required type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="you@example.com" />
           </label>
-        )}
+          {mode !== "forgot" && (
+            <label className="field">
+              <span>Password</span>
+              <input required type="password" minLength={mode === "signup" ? 8 : undefined} value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} placeholder={mode === "signup" ? "At least 8 characters" : "••••••••"} />
+            </label>
+          )}
+          {mode === "login" && (
+            <button type="button" className="btn-link auth-forgot-link" onClick={() => switchMode("forgot")}>Forgot password?</button>
+          )}
+          {error && <div className="field-error">{error}</div>}
+          <button className="btn-primary btn-block" type="submit" disabled={loading}>
+            {loading ? "Please wait…" : mode === "login" ? "Log in" : mode === "forgot" ? "Send reset link" : "Create account"}
+          </button>
+          {mode === "forgot" && (
+            <button type="button" className="btn-link" onClick={() => switchMode("login")}>Back to log in</button>
+          )}
+        </form>
+      )}
+    </div>
+  );
+}
+
+function ResetPasswordScreen({ apiBase, token }) {
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    if (password !== confirm) {
+      setError("Passwords don't match.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await apiFetch({ base: apiBase }, "/auth/reset-password", {
+        method: "POST",
+        body: JSON.stringify({ token, password }),
+      });
+      setDone(true);
+      // Clear the reset token from the URL so refreshing the page
+      // afterward lands on the normal login screen, not a re-attempt
+      // at using an already-spent (or now-invalid) token.
+      window.history.replaceState({}, "", window.location.pathname);
+    } catch (e2) {
+      setError(e2.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (done) {
+    return (
+      <div className="paper auth-wrap">
+        <h1 className="page-title">Password updated</h1>
+        <p className="page-sub">You can now log in with your new password.</p>
+        <button className="btn-primary btn-block" onClick={() => window.location.assign(window.location.pathname)}>
+          Go to log in
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="paper auth-wrap">
+      <h1 className="page-title">Set a new password</h1>
+      <form className="auth-form" onSubmit={submit}>
         <label className="field">
-          <span>Email</span>
-          <input required type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} placeholder="you@example.com" />
+          <span>New password</span>
+          <input required type="password" minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 8 characters" />
         </label>
         <label className="field">
-          <span>Password</span>
-          <input required type="password" minLength={mode === "signup" ? 8 : undefined} value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} placeholder={mode === "signup" ? "At least 8 characters" : "••••••••"} />
+          <span>Confirm new password</span>
+          <input required type="password" minLength={8} value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Re-enter your new password" />
         </label>
         {error && <div className="field-error">{error}</div>}
         <button className="btn-primary btn-block" type="submit" disabled={loading}>
-          {loading ? "Please wait…" : mode === "login" ? "Log in" : "Create account"}
+          {loading ? "Please wait…" : "Update password"}
         </button>
       </form>
     </div>
@@ -2374,6 +2477,7 @@ body { margin: 0; }
 .admin-footer-link { background: none; border: none; color: var(--line); font-size: 11px; cursor: pointer; padding: 4px 8px; }
 .admin-footer-link:hover { color: var(--ink-soft); }
 .admin-panel { max-width: 640px; margin: 0 auto 24px; }
+.auth-forgot-link { align-self: flex-end; margin-top: -8px; font-size: 13px; }
 .book-cover { width: 100%; aspect-ratio: 2 / 3; object-fit: contain; background: #FBF7EE; border-radius: 4px; border: 1px solid var(--line); margin: 4px 0; display: block; }
 .admin-edit-form { padding: 4px; }
 .admin-edit-form-active { border: 2px solid var(--gold); border-radius: 6px; padding: 10px; background: rgba(184, 121, 10, 0.06); }
