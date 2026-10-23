@@ -276,6 +276,21 @@ async function migrate() {
       created_at BIGINT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_password_resets_user ON password_resets(user_id);
+
+    -- Free access granted to approved franchise partners for the length of
+    -- their contract. Keyed by email so it applies whether the partner
+    -- registers here before or after the grant. Written only by the signed
+    -- partner-sync endpoint (src/routes/partnersync.routes.js).
+    CREATE TABLE IF NOT EXISTS partner_grants (
+      id TEXT PRIMARY KEY,
+      partner_key TEXT NOT NULL,   -- the partner portal's application id
+      email TEXT NOT NULL,         -- lower-case
+      subject_id TEXT NOT NULL,
+      expires_at BIGINT NOT NULL,
+      created_at BIGINT NOT NULL,
+      UNIQUE(partner_key, subject_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_partner_grants_email ON partner_grants(email);
   `);
 
   for (const c of COUNTRY_SEED) {

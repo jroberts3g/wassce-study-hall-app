@@ -590,7 +590,7 @@ async function fetchSubscriptions(api) {
   const data = await apiFetch(api, "/subscriptions");
   const map = {};
   for (const s of data.subscriptions) {
-    map[s.subjectId] = { status: s.status, startedAt: s.startedAt, expiresAt: s.expiresAt };
+    map[s.subjectId] = { status: s.status, startedAt: s.startedAt, expiresAt: s.expiresAt, partnerAccess: !!s.partnerAccess };
   }
   return map;
 }
@@ -1005,7 +1005,7 @@ function SubscribeTab({ subscriptions, priceGmd, currency, onPay }) {
 function ExpiryBanners({ subscriptions, onRenew }) {
   const items = SUBJECTS.filter((s) => {
     const sub = subscriptions[s.id];
-    if (!sub || sub.status !== "active") return false;
+    if (!sub || sub.status !== "active" || sub.partnerAccess) return false;
     const left = daysLeft(sub.expiresAt);
     return left <= 5 && left >= 0;
   });
@@ -1036,13 +1036,16 @@ function SubjectCard({ subject, sub, priceGmd, currency, onPay }) {
         <h3 className="subject-name">{subject.name}</h3>
       </div>
       <div className="subject-card-status">
-        {isActive ? <span className="status status-active">Active until {fmtDate(sub.expiresAt)}</span>
+        {isActive && sub.partnerAccess ? <span className="status status-active">Free for franchise partners until {fmtDate(sub.expiresAt)}</span>
+          : isActive ? <span className="status status-active">Active until {fmtDate(sub.expiresAt)}</span>
           : isExpired ? <span className="status status-expired">Expired {fmtDate(sub.expiresAt)}</span>
           : <span className="status status-none">Not subscribed</span>}
       </div>
       <div className="subject-card-bottom">
         <div className="price">{priceGmd} {currency} <span>/ {SUBSCRIPTION_DAYS} days</span></div>
-        <button className="btn-primary" onClick={onPay}>{isActive ? "Extend" : isExpired ? "Renew" : "Subscribe"}</button>
+        {isActive && sub.partnerAccess
+          ? <span className="status status-active">Included</span>
+          : <button className="btn-primary" onClick={onPay}>{isActive ? "Extend" : isExpired ? "Renew" : "Subscribe"}</button>}
       </div>
     </div>
   );

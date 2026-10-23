@@ -17,6 +17,7 @@ const booksRoutes = require("./routes/books.routes");
 const webhooksRoutes = require("./routes/webhooks.routes");
 const aiRoutes = require("./routes/ai.routes");
 const settingsRoutes = require("./routes/settings.routes");
+const partnerSyncRoutes = require("./routes/partnersync.routes");
 
 const app = express();
 
@@ -62,6 +63,10 @@ app.use(cors({ origin: corsOrigin === "*" ? true : corsOrigin.split(",") }));
 // Webhooks need the raw body for signature verification, so this is
 // mounted BEFORE express.json() and given its own raw parser.
 app.use("/webhooks", express.raw({ type: "*/*" }), webhooksRoutes);
+
+// Signed server-to-server calls from the Franchise Partner Portal. Raw body
+// is needed to check the signature, so this is also mounted BEFORE express.json().
+app.use("/partner-sync", express.raw({ type: "*/*", limit: "100kb" }), partnerSyncRoutes);
 
 app.use(express.json());
 

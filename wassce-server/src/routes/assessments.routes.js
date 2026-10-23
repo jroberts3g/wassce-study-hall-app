@@ -7,9 +7,9 @@ const subscriptionService = require("../services/subscription.service");
 
 const router = express.Router();
 
+// A paid subscription OR a franchise-partner grant gives access.
 async function hasActiveSubscription(userId, countryId, subjectId) {
-  const sub = await subscriptionService.getSubscription(userId, countryId, subjectId);
-  return !!sub && sub.status === "active" && Number(sub.expires_at) > Date.now();
+  return subscriptionService.hasAccess(userId, countryId, subjectId);
 }
 
 // Record a completed self-assessment. Requires an active subscription

@@ -65,16 +65,56 @@ async function getSubscription(userId, countryId, subjectId) {
   );
 }
 
+/** Live partner grants (free access for franchise partners) for one user, by email. */
+async function activeGrants(userId, now = Date.now()) {
+  const u = await db.get("SELECT email FROM users WHERE id = $1", [userId]);
+  if (!u) return [];
+  return db.all(
+    "SELECT subject_id, expires_at, created_at FROM partner_grants WHERE email = $1 AND expires_at > $2",
+    [String(u.email).toLowerCase(), now]
+  );
+}
+
+/** True if the user can use this subject: a paid subscription or a partner grant. */
+async function hasAccess(userId, countryId, subjectId) {
+  const now = Date.now();
+  const sub = await getSubscription(userId, countryId, subjectId);
+  if (sub && sub.status === "active" && Number(sub.expires_at) > now) return true;
+  return (await activeGrants(userId, now)).some((g) => g.subject_id === subjectId);
+}
+
 async function listSubscriptionsForUser(userId) {
   const rows = await db.all("SELECT * FROM subscriptions WHERE user_id = $1", [userId]);
   const now = Date.now();
-  return rows.map((r) => ({
-    subjectId: r.subject_id,
-    countryId: r.country_id,
-    status: r.status === "active" && Number(r.expires_at) > now ? "active" : "expired",
-    startedAt: r.started_at === null ? null : Number(r.started_at),
-    expiresAt: r.expires_at === null ? null : Number(r.expires_at),
-  }));
+  const bySubject = new Map();
+  for (const r of rows) {
+    bySubject.set(r.country_id + "|" + r.subject_id, {
+      subjectId: r.subject_id,
+      countryId: r.country_id,
+      status: r.status === "active" && Number(r.expires_at) > now ? "active" : "expired",
+      startedAt: r.started_at === null ? null : Number(r.started_at),
+      expiresAt: r.expires_at === null ? null : Number(r.expires_at),
+    });
+  }
+  // A partner grant makes the subject active until the contract ends, without
+  // touching any paid subscription. It applies in the user's own country.
+  const grants = await activeGrants(userId, now);
+  if (grants.length) {
+    const u = await db.get("SELECT country_id FROM users WHERE id = $1", [userId]);
+    const countryId = u ? u.country_id : "gm";
+    for (const g of grants) {
+      const key = countryId + "|" + g.subject_id;
+      const cur = bySubject.get(key);
+      const gExp = Number(g.expires_at);
+      if (cur && cur.status === "active" && cur.expiresAt >= gExp) continue; // paid cover already runs longer
+      bySubject.set(key, {
+        subjectId: g.subject_id, countryId, status: "active",
+        startedAt: cur && cur.startedAt ? cur.startedAt : Number(g.created_at),
+        expiresAt: gExp, partnerAccess: true,
+      });
+    }
+  }
+  return [...bySubject.values()];
 }
 
 module.exports = {
@@ -82,5 +122,6 @@ module.exports = {
   activateFromPayment,
   markPaymentFailed,
   getSubscription,
+  hasAccess,
   listSubscriptionsForUser,
 };
